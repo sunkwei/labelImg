@@ -1,3 +1,6 @@
+#!/usr/bin/python
+#coding: utf-8
+
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
@@ -26,8 +29,28 @@ class LabelDialog(QDialog):
             self.listWidget = QListWidget(self)
             for item in listItem:
                 self.listWidget.addItem(item)
-            self.listWidget.itemDoubleClicked.connect(self.listItemClick)
+            self.listWidget.itemClicked.connect(self.listItemClick)
             layout.addWidget(self.listWidget)
+
+        # 选择 pose
+        self.poseWidget = QComboBox(self)
+        self.poseWidget.addItem('Unspecified')
+        self.poseWidget.addItem('Left')
+        self.poseWidget.addItem('Right')
+        self.poseWidget.addItem('Frontal')
+        self.poseWidget.addItem('Rear')
+        self.poseWidget.setCurrentIndex(0)
+        layout.addWidget(self.poseWidget)
+
+        # 选择 truncated
+        self.truncatedWidget = QCheckBox("Truncated", self)
+        self.truncatedWidget.setCheckState(Qt.Unchecked)
+        layout.addWidget(self.truncatedWidget)
+
+        # 选择 difficult
+        self.diffifultWidget = QCheckBox("Difficult", self)
+        self.diffifultWidget.setCheckState(Qt.Unchecked)
+        layout.addWidget(self.diffifultWidget)
 
         self.setLayout(layout)
 
@@ -38,15 +61,36 @@ class LabelDialog(QDialog):
     def postProcess(self):
         self.edit.setText(self.edit.text().trimmed())
 
-    def popUp(self, text='', move=True):
+    def popUp(self, text='', move=True, shape=None):
         self.edit.setText(text)
         self.edit.setSelection(0, len(text))
         self.edit.setFocus(Qt.PopupFocusReason)
+        if shape:
+            if shape.pose:
+                if shape.pose == 'Unspecified':
+                    self.poseWidget.setCurrentIndex(0)
+                elif shape.pose == 'Left':
+                    self.poseWidget.setCurrentIndex(1)
+                elif shape.pose == 'Right':
+                    self.poseWidget.setCurrentIndex(2)
+                elif shape.pose == 'Frontal':
+                    self.poseWidget.setCurrentIndex(3)
+                elif shape.pose == 'Rear':
+                    self.poseWidget.setCurrentIndex(4)
+            if shape.truncated:
+                self.truncatedWidget.setCheckState(Qt.Checked)
+            if shape.difficult:
+                self.diffifultWidget.setCheckState(Qt.Checked)
         if move:
             self.move(QCursor.pos())
-        return self.edit.text() if self.exec_() else None
+        if self.exec_():
+            pose = str(self.poseWidget.currentText())
+            truncated = 1 if self.truncatedWidget.checkState() != Qt.Unchecked else 0
+            difficult = 1 if self.diffifultWidget.checkState() != Qt.Unchecked else 0
+            return self.edit.text(), pose, truncated, difficult
+        else:
+            return None,None,0,0
 
     def listItemClick(self, tQListWidgetItem):
         text = tQListWidgetItem.text().trimmed()
         self.edit.setText(text)
-        self.validate()

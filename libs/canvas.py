@@ -513,9 +513,12 @@ class Canvas(QWidget):
         elif key == Qt.Key_Return and self.canCloseShape():
             self.finalise()
 
-    def setLastLabel(self, text):
+    def setLastLabel(self, text, pose, truncated, difficult):
         assert text
         self.shapes[-1].label = text
+        self.shapes[-1].pose = pose
+        self.shapes[-1].truncated = truncated
+        self.shapes[-1].difficult = difficult
         return self.shapes[-1]
 
     def undoLastLine(self):

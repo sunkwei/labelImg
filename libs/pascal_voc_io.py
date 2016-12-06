@@ -65,9 +65,12 @@ class PascalVocWriter:
         segmented.text = '0'
         return top
 
-    def addBndBox(self, xmin, ymin, xmax, ymax, name):
+    def addBndBox(self, xmin, ymin, xmax, ymax, name, pose='Unspecified', truncated=0, difficult=0):
         bndbox = {'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax}
         bndbox['name'] = name
+        bndbox['pose'] = pose
+        bndbox['truncated'] = truncated
+        bndbox['difficult'] = difficult
         self.boxlist.append(bndbox)
 
     def appendObjects(self, top):
@@ -76,11 +79,11 @@ class PascalVocWriter:
             name = SubElement(object_item, 'name')
             name.text = str(each_object['name'])
             pose = SubElement(object_item, 'pose')
-            pose.text = "Unspecified"
+            pose.text = each_object['pose']
             truncated = SubElement(object_item, 'truncated')
-            truncated.text = "0"
+            truncated.text = str(each_object['truncated'])
             difficult = SubElement(object_item, 'difficult')
-            difficult.text = "0"
+            difficult.text = str(each_object['difficult'])
             bndbox = SubElement(object_item, 'bndbox')
             xmin = SubElement(bndbox, 'xmin')
             xmin.text = str(each_object['xmin'])
@@ -109,7 +112,7 @@ class PascalVocReader:
 
     def __init__(self, filepath):
         # shapes type:
-        # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color]
+        # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, pose, truncated, difficult]
         self.shapes = []
         self.filepath = filepath
         self.parseXML()
@@ -117,13 +120,13 @@ class PascalVocReader:
     def getShapes(self):
         return self.shapes
 
-    def addShape(self, label, rect):
+    def addShape(self, label, rect, pose, truncated, difficult):
         xmin = rect[0]
         ymin = rect[1]
         xmax = rect[2]
         ymax = rect[3]
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
-        self.shapes.append((label, points, None, None))
+        self.shapes.append((label, points, None, None, pose, truncated, difficult))
 
     def parseXML(self):
         assert self.filepath.endswith('.xml'), "Unsupport file format"
@@ -136,9 +139,12 @@ class PascalVocReader:
             bndbox = object_iter.find("bndbox")
             rects.append([int(it.text) for it in bndbox])
             label = object_iter.find('name').text
+            pose = object_iter.find('pose').text
+            truncated = int(object_iter.find('truncated').text)
+            difficult = int(object_iter.find('difficult').text)
 
             for rect in rects:
-                self.addShape(label, rect)
+                self.addShape(label, rect, pose, truncated, difficult)
         return True
 
 

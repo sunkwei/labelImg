@@ -35,6 +35,9 @@ class Shape(object):
         self.points = []
         self.fill = False
         self.selected = False
+        self.pose = 'Unspecified'
+        self.truncated = 0
+        self.difficult = 0
 
         self._highlightIndex = None
         self._highlightMode = self.NEAR_VERTEX

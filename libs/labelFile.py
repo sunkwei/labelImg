@@ -73,7 +73,8 @@ class LabelFile(object):
             points = shape['points']
             label = shape['label']
             bndbox = LabelFile.convertPoints2BndBox(points)
-            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label)
+            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label,
+                    pose=shape['pose'], truncated=shape['truncated'], difficult=shape['difficult'])
             bSave = True
 
         if bSave:

@@ -510,9 +510,13 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.canvas.editing():
             return
         item = item if item else self.currentItem()
-        text = self.labelDialog.popUp(item.text())
+        shape = self.itemsToShapes[item]
+        text,pose,truncated,difficult = self.labelDialog.popUp(item.text(), shape=shape)
         if text is not None:
             item.setText(text)
+            shape.pose = pose
+            shape.truncated = truncated
+            shape.difficult = difficult
             self.setDirty()
 
     # Tzutalin 20160906 : Add file list and dock to move faster
@@ -540,7 +544,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.shapeFillColor.setEnabled(selected)
 
     def addLabel(self, shape):
-        item = QListWidgetItem(shape.label)
+        label = shape.label
+        item = QListWidgetItem(label)
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
         item.setCheckState(Qt.Checked)
         self.itemsToShapes[item] = shape
@@ -557,10 +562,13 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadLabels(self, shapes):
         s = []
-        for label, points, line_color, fill_color in shapes:
+        for label, points, line_color, fill_color, pose, truncated, difficult in shapes:
             shape = Shape(label=label)
             for x, y in points:
                 shape.addPoint(QPointF(x, y))
+            shape.pose = pose
+            shape.difficult = difficult
+            shape.truncated = truncated
             shape.close()
             s.append(shape)
             self.addLabel(shape)
@@ -574,6 +582,9 @@ class MainWindow(QMainWindow, WindowMixin):
         lf = LabelFile()
         def format_shape(s):
             return dict(label=unicode(s.label),
+                        pose=s.pose,
+                        truncated=s.truncated,
+                        difficult=s.difficult,
                         line_color=s.line_color.getRgb()\
                                 if s.line_color != self.lineColor else None,
                         fill_color=s.fill_color.getRgb()\
@@ -627,16 +638,15 @@ class MainWindow(QMainWindow, WindowMixin):
         if len(self.labelHist) > 0:
             self.labelDialog = LabelDialog(parent=self, listItem=self.labelHist)
 
-        text = self.labelDialog.popUp()
+        text,pose,truncated,difficult = self.labelDialog.popUp()
         if text is not None:
-            self.addLabel(self.canvas.setLastLabel(text))
+            self.addLabel(self.canvas.setLastLabel(text, pose, truncated, difficult))
             if self.beginner(): # Switch to edit mode.
                 self.canvas.setEditing(True)
                 self.actions.create.setEnabled(True)
             else:
                 self.actions.editMode.setEnabled(True)
             self.setDirty()
-
 
             if text not in self.labelHist:
                 self.labelHist.append(text)

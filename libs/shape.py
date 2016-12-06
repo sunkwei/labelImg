@@ -36,7 +36,7 @@ class Shape(object):
         self.fill = False
         self.selected = False
         self.pose = 'Unspecified'
-        self.truncated = 0
+        self.truncated = 1
         self.difficult = 0
 
         self._highlightIndex = None

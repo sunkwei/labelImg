@@ -66,6 +66,7 @@ class LabelDialog(QDialog):
         self.edit.setText(text)
         self.edit.setSelection(0, len(text))
         self.edit.setFocus(Qt.PopupFocusReason)
+        
         if shape:
             if shape.pose:
                 if shape.pose == 'Unspecified':

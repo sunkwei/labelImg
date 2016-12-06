@@ -82,8 +82,12 @@ class LabelDialog(QDialog):
                     self.poseWidget.setCurrentIndex(4)
             if shape.truncated:
                 self.truncatedWidget.setCheckState(Qt.Checked)
+            else:
+                self.truncatedWidget.setCheckState(Qt.Unchecked)
             if shape.difficult:
                 self.diffifultWidget.setCheckState(Qt.Checked)
+            else:
+                self.diffifultWidget.setCheckState(Qt.Unchecked)
         if move:
             self.move(QCursor.pos())
         if self.exec_():

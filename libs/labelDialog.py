@@ -28,8 +28,9 @@ class LabelDialog(QDialog):
         if listItem is not None and len(listItem) > 0:
             self.listWidget = QListWidget(self)
             for item in listItem:
-                utxt = item.decode('utf-8')
-                self.listWidget.addItem(utxt)
+                if type(item) is str:
+                    item = item.decode('utf-8')
+                self.listWidget.addItem(item)
             self.listWidget.itemClicked.connect(self.listItemClick)
             layout.addWidget(self.listWidget)
 

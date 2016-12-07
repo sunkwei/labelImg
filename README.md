@@ -86,3 +86,7 @@ Send a pull request
 ### License
 [License](LICENSE.md)
 
+### Some Changing ...
+labelDialog: add pose, truncated, difficult flags;
+support chinese labels
+

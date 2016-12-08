@@ -126,13 +126,15 @@ class PascalVocReader:
         xmax = rect[2]
         ymax = rect[3]
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
-        self.shapes.append((label, points, None, None, pose, truncated, difficult))
+        self.shapes.append([label, points, None, None, pose, truncated, difficult])
 
     def parseXML(self):
         assert self.filepath.endswith('.xml'), "Unsupport file format"
         parser = etree.XMLParser(encoding='utf-8')
         xmltree = ElementTree.parse(self.filepath, parser=parser).getroot()
         filename = xmltree.find('filename').text
+        size = xmltree.find('size')
+        self.imgsize = (int(size.find('height').text), int(size.find('width').text), int(size.find('depth').text))
 
         for object_iter in xmltree.findall('object'):
             rects = []

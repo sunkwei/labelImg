@@ -5,7 +5,7 @@ import sys
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
 from lxml import etree
-
+from remap import remap
 
 class PascalVocWriter:
 
@@ -16,6 +16,7 @@ class PascalVocWriter:
         self.imgSize = imgSize
         self.boxlist = []
         self.localImgPath = localImgPath
+        self.remap = remap('data/predefined_classes.txt', 'data/predefined_classes.txt.en')
 
     def prettify(self, elem):
         """
@@ -67,7 +68,7 @@ class PascalVocWriter:
 
     def addBndBox(self, xmin, ymin, xmax, ymax, name, pose='Unspecified', truncated=0, difficult=0):
         bndbox = {'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax}
-        bndbox['name'] = name
+        bndbox['name'] = self.remap.conv(name.encode('utf-8')) # FIXME: 是否应该放到 remap 中??
         bndbox['pose'] = pose
         bndbox['truncated'] = truncated
         bndbox['difficult'] = difficult
@@ -77,7 +78,8 @@ class PascalVocWriter:
         for each_object in self.boxlist:
             object_item = SubElement(top, 'object')
             name = SubElement(object_item, 'name')
-            name.text = unicode(each_object['name']) #.encode('utf-8')
+            #name.text = unicode(each_object['name']) #.encode('utf-8')
+            name.text = each_object['name']
             pose = SubElement(object_item, 'pose')
             pose.text = each_object['pose']
             truncated = SubElement(object_item, 'truncated')
@@ -113,6 +115,7 @@ class PascalVocReader:
     def __init__(self, filepath):
         # shapes type:
         # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, pose, truncated, difficult]
+        self.remap = remap('data/predefined_classes.txt.en', 'data/predefined_classes.txt')
         self.shapes = []
         self.filepath = filepath
         self.parseXML()
@@ -141,6 +144,7 @@ class PascalVocReader:
             bndbox = object_iter.find("bndbox")
             rects.append([int(it.text) for it in bndbox])
             label = object_iter.find('name').text
+            label = self.remap.conv(label).decode('utf-8') # FIXME: 这里???
             pose = object_iter.find('pose').text
             truncated = int(object_iter.find('truncated').text)
             difficult = int(object_iter.find('difficult').text)

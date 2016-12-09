@@ -68,17 +68,17 @@ def conv_one(fname, **kwargs):
 
     basename = os.path.basename(fname)
     mainname,_ = os.path.splitext(basename)
-    writer = PascalVocWriter(folder, mainname, reader.imgsize)
+    writer = PascalVocWriter(folder, mainname + '.jpg', reader.imgsize)
     for s in shapes:
         b = convertPoints2BndBox(s[1])
         writer.addBndBox(b[0],b[1],b[2],b[3], s[0], s[4], s[5], s[6]) 
-    writer.save()
+    writer.save(targetFile=mainname + '.xml')
 
 
 
 def conv_dir(dname, **kwargs):
     # 转换一个目录下的所有 xml 文件
-    kwargs.update({'folder':'./xml'})
+    kwargs.update({'folder':'VOC2007'})
     for fname in os.listdir(dname):
         _, ext = os.path.splitext(fname)
         if ext == '.xml':
